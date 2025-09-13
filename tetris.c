@@ -1,82 +1,61 @@
-                    case 80: // Flecha abajo
-                        for (int i = 0; i < 4; i++) temp.blocks[i].y++;
-                        break;
-                    case 72: // Flecha arriba (rotar)
-                        {
-                            Tetromino rotated = current;
-                            rotated.rotation = (rotated.rotation + 1) % 4;
-                            // Actualizar bloques según rotación
-                            int idx = 0;
-                            for (int i = 0; i < 4; i++) {
-                                for (int j = 0; j < 4; j++) {
-                                    if (shapes[rotated.type][rotated.rotation][i][j]) {
-                                        rotated.blocks[idx].x = current.blocks[0].x - (current.blocks[0].x - j);
-                                        rotated.blocks[idx].y = current.blocks[0].y - (current.blocks[0].y - i);
-                                        idx++;
-                                    }
-                                }
-                            }
-                            if (!checkCollision(&rotated)) {
-                                current = rotated;
-                            }
-                        }
-                        continue;
-                    case 32: // Espacio - bajar al fondo
-                        while (!checkCollision(&temp)) {
-                            current = temp;
-                            for (int i = 0; i < 4; i++) temp.blocks[i].y++;
-                        }
-                        mergeTetromino(&current);
-                        int lines = clearLines();
-                        updateScore(lines);
-                        current = next;
-                        next = createNewTetromino();
-                        if (checkCollision(&current)) {
-                            gameOver = 1;
-                        }
-                        continue;
-                }
-                
-                if (!checkCollision(&temp)) {
-                    current = temp;
-                }
-            }
-        }
-        
-        if (!paused) {
-            clock_t now = clock();
-            double elapsed = (double)(now - lastTime) / CLOCKS_PER_SEC;
-            double speed = 1.0 / level;
-            
-            if (elapsed > speed) {
-                Tetromino temp = current;
-                for (int i = 0; i < 4; i++) temp.blocks[i].y++;
-                
-                if (!checkCollision(&temp)) {
-                    current = temp;
-                } else {
-                    mergeTetromino(&current);
-                    int lines = clearLines();
-                    updateScore(lines);
-                    current = next;
-                    next = createNewTetromino();
-                    if (checkCollision(&current)) {
-                        gameOver = 1;
-                    }
-                }
-                lastTime = now;
-            }
-        }
-        
-        drawBoard();
-        drawTetromino(&current, 1);
-        Sleep(50);
-    }
-    
-    clearScreen();
-    printf("=== FIN DEL JUEGO ===\n");
-    printf("Tu puntaje: %d\n", currentScore);
-    saveHighScore(currentScore);
-    printf("Presione cualquier tecla para volver al menu...");
-    getch();
-}
+#ifndef TETRIS_H
+#define TETRIS_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <conio.h>
+#include <windows.h>
+
+#define WIDTH 10
+#define HEIGHT 20
+#define MAX_SCORES 10
+
+// Estructuras
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+typedef struct {
+    Point blocks[4];
+    int type;
+    int rotation;
+} Tetromino;
+
+typedef struct {
+    char name[3];
+    int score;
+} HighScore;
+
+// Variables globales
+extern int board[HEIGHT][WIDTH];
+extern HighScore highScores[MAX_SCORES];
+extern int scoreCount;
+
+// Funciones del menú
+void showMainMenu();
+void showInstructions();
+void showHighScores();
+void playGame();
+
+// Funciones del juego
+void initBoard();
+void drawBoard();
+void drawTetromino(Tetromino *t, int visible);
+int checkCollision(Tetromino *t);
+void rotateTetromino(Tetromino *t);
+void mergeTetromino(Tetromino *t);
+int clearLines();
+void updateScore(int lines);
+void saveHighScore(int score);
+void loadHighScores();
+void drawASCIIArt();
+
+// Utilidades
+void clearScreen();
+void setCursorPosition(int x, int y);
+void setColor(int color);
+
+#endif
